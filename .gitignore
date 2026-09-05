@@ -1,0 +1,10 @@
+# OS artifacts
+.DS_Store
+
+# agent skills
+.claude/skills/
+.agents/skills/
+
+# environment variables
+
+.env
