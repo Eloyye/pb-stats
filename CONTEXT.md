@@ -28,6 +28,9 @@ The transfer of service from one team to the other after the serving team's serv
 **Shot type**:
 The classification of a shot's play pattern, such as dink, drop, dropshot, drive, lob, overhead, or block/reset, separate from contact mode and rally role.
 
+**Other shot type**:
+A shot whose observed play pattern falls outside the named shot-type categories. It is distinct from an unknown shot type, for which the evidence is insufficient to classify the shot.
+
 **Contact mode**:
 Whether a shot is struck as a volley or after a bounce.
 
@@ -54,8 +57,20 @@ An attribute for which the available evidence does not support a resolved value;
 **Metric coverage**:
 The extent to which relevant observations have sufficient known attributes to contribute to a particular metric, with exclusions made explicit.
 
+**Detected-attempt coverage**:
+The proportion of detected shot attempts with sufficient known attributes to contribute to a particular metric. It does not establish complete-match coverage when additional attempts may be missing.
+
+**Observation gap**:
+A span of play in which the available evidence does not establish a complete sequence of events. The number of missing shot attempts may itself be unknown.
+
 **Replay**:
 A broadcast presentation of previously shown play, rather than another occurrence of its shots or rally.
 
 **Operator correction**:
 A human revision of an inferred match fact or label after reviewing the evidence.
+
+**Automatic observation**:
+A match fact or label inferred by a model without human confirmation. Its eligibility for a metric depends on validated acceptance rules and the attributes required by that metric.
+
+**Operator confirmation**:
+A human verification that an inferred match fact or label agrees with the available evidence, without changing its value.

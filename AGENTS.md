@@ -1,4 +1,8 @@
   
+## Version Control
+
+Use conventional commit
+
 ## Agent skills
 
 ### Issue tracker
