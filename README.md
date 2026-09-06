@@ -4,6 +4,8 @@ A personal project for pickleball statistics enthusiasts: analyze professional d
 
 This README describes the agreed v1 plan, not implemented capabilities. Canonical domain terms are defined in [CONTEXT.md](CONTEXT.md).
 
+The [V1 architecture and UI design](docs/v1-design.md) records the detailed workflow, data model, processing design, and implementation milestones. The [quality checks](docs/quality.md) document the implemented uv, Ruff, and ty tooling and remaining validation work.
+
 ## V1 scope
 
 - Process one complete doubles match at a time from a supported broadcast format.
@@ -43,11 +45,13 @@ Record these as separate attributes rather than competing labels:
 
 | Attribute | Initial values |
 | --- | --- |
-| Shot type | Dink, drop, dropshot, drive, lob, overhead, block/reset, other/unknown |
+| Shot type | Dink, drop, dropshot, drive, lob, overhead, block/reset, other, unknown |
 | Contact mode | Volley, after bounce, unknown |
 | Rally role | Serve, return, third shot, later shot with sequence number where known, unknown |
 
 A volley dink can therefore retain both its shot type and its contact mode. A known hitter or rally role does not require a known shot type.
+
+Use **other** when the observed shot falls outside the named categories and **unknown** when the evidence is insufficient to classify it. Keep these values separate in annotations and reports.
 
 The agreed annotation convention distinguishes three soft shots:
 
@@ -70,6 +74,8 @@ Count only failure on the shot itself. A third shot that lands in and is then at
 An attempt needs known rally role and immediate outcome to enter that role's rate, and known attribution to enter a player/team breakdown. Show relevant exclusions separately. A zero denominator yields an unavailable rate, not 0%.
 
 These rates measure observed net/out failures, not shot quality. Missing observations may be systematic, so rates over known attempts must not be presented as complete-match rates without their coverage.
+
+Show eligible versus detected attempts and unresolved observation gaps. If additional attempts may be missing and their count is unknown, detected-attempt coverage must not be presented as complete-match coverage.
 
 ## Evidence and uncertainty
 
@@ -133,6 +139,15 @@ After the single-match workflow is validated:
 - Kitchen-establishment metrics, kitchen unestablished error percentage (KUEP), return-hold percentage, and dink error percentage. Define their events, populations, and denominators before implementation; no complement relationship between return-hold and KUEP is assumed.
 
 ## Development setup
+
+Python tooling uses uv, Ruff, and ty with strict annotation and type-checking rules. After installing uv, run:
+
+```bash
+uv sync --locked --dev
+uv run --locked python scripts/check_quality.py
+```
+
+These commands check the tooling foundation; the application and model pipeline are not implemented yet. See [quality checks](docs/quality.md) for local/CI behavior and the test requirements for the first application slice.
 
 For agentic development:
 
