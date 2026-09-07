@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import os
 import subprocess
 from pathlib import Path
 
@@ -22,13 +23,15 @@ def main() -> int:
         if result.returncode != 0:
             return result.returncode
 
-    has_application = any((ROOT / "src").rglob("*.py"))
-    has_tests = (ROOT / "tests").exists()
-    if has_application or has_tests:
-        print("Running: uv run --locked pytest", flush=True)
-        return subprocess.run(("uv", "run", "--locked", "pytest"), cwd=ROOT, check=False).returncode
-
-    print("Application tests: not present yet; no application code has been added.")
+    # Both runners fail empty collection; application tests are mandatory now.
+    for command in [
+        ("uv", "run", "--locked", "pytest"),
+        ("npm.cmd" if os.name == "nt" else "npm", "run", "check", "--prefix", "frontend"),
+    ]:
+        print(f"Running: {' '.join(command)}", flush=True)
+        result = subprocess.run(command, cwd=ROOT, check=False)
+        if result.returncode != 0:
+            return result.returncode
     return 0
 
 
