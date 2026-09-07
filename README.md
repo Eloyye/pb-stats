@@ -2,9 +2,29 @@
 
 A personal project for pickleball statistics enthusiasts: analyze professional doubles footage to understand **where players and teams lose rallies, with video evidence supporting the statistics**.
 
-This README describes the agreed v1 plan, not implemented capabilities. Canonical domain terms are defined in [CONTEXT.md](CONTEXT.md).
+The initial application shell runs locally and persists a workspace name with revision conflict detection. Match import, review, processing, and reporting below remain the agreed v1 plan. Canonical domain terms are defined in [CONTEXT.md](CONTEXT.md).
 
 The [V1 architecture and UI design](docs/v1-design.md) records the detailed workflow, data model, processing design, and implementation milestones. The [quality checks](docs/quality.md) document the implemented uv, Ruff, and ty tooling and remaining validation work.
+
+## Run the application shell
+
+Install Python 3.12 through uv and Node.js 24 (minimum 22.12), then run:
+
+```sh
+uv sync --locked --dev
+npm ci --prefix frontend
+npm run build --prefix frontend
+```
+
+The source layout is not packaged yet. Launch with the source directory available:
+
+```sh
+uv run --locked --directory src python -m pb_stats --workspace ../.local-workspace
+```
+
+The launcher binds only `127.0.0.1:8765`, prints a per-launch session link, and opens the built UI after the server is ready. Use `--no-browser` to open the printed link yourself, or `--port` to select another loopback port. Keep that session link private. The tab retains its credential across refresh; restart links replace it. An old tab after a server restart needs the newly printed link. Metadata persists in the selected workspace directory. Close the terminal process to stop the application.
+
+Run the complete quality gate with `uv run --locked python scripts/check_quality.py` after installing frontend dependencies.
 
 ## V1 scope
 
@@ -20,6 +40,8 @@ The [V1 architecture and UI design](docs/v1-design.md) records the detailed work
 The provisional source family is the official PPA Tour's Carvana Mesa Cup broadcasts, beginning with [Johns/Tardio vs Patriquin/Alshon at the The Carvana Mesa Cup](https://www.youtube.com/watch?v=Vzny7HAc7cA). PPA's [event statistics](https://www.ppatour.com/championship-sunday-standout-stats-from-the-carvana-mesa-cup-2/) provide independent game-score and rally-statistic cross-checks.
 
 The video listing and published results have been checked. Playback availability, completeness, image quality, scoreboard layout, camera changes, replays, and audio quality still need inspection before this becomes a validated input format. Select a separate match from the same source family for held-out evaluation, including at least one complete manually checked game.
+
+The [footage validation checklist](docs/footage/validation.md) and [annotation guide](docs/footage/annotation-guide.md) record the inspection and manual annotation gates.
 
 Supporting this format includes handling its camera cuts, broadcast transitions, replays, and occlusions. It does not imply support for arbitrary YouTube broadcasts.
 

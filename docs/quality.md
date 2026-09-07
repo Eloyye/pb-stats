@@ -1,15 +1,16 @@
 # Quality checks
 
-The Python tooling is implemented; the application, model pipeline, and application tests are not. The [V1 design](v1-design.md) defines the next implementation slices and their required validation.
+The local FastAPI/React shell, SQLite migration skeleton, and backend/frontend integration tests are implemented. Match analysis and the model pipeline are not. The [V1 design](v1-design.md) defines the next implementation slices and their required validation.
 
 ## Reproducible environment
 
 Use uv to manage the environment, development dependencies, and checked-in `uv.lock`. `.python-version` selects Python 3.12 and `pyproject.toml` restricts this initial environment to that minor version. This is the tooling baseline, not a claim that the eventual model stack has been validated on the Windows RTX 5080 machine. Revisit the runtime deliberately if model compatibility requires it, updating the pin, lock, type-check target, and CI together.
 
-The current lock resolves Ruff 0.16.6, ty 0.0.78, and pytest 9.1.1. uv 0.12.10 is used locally and pinned in CI. FastAPI and GPU/model dependencies are added with the application and pilot; installing this tooling bootstrap does not install a working application.
+The current lock resolves Ruff 0.16.6, ty 0.0.78, and pytest 9.1.1. uv 0.12.10 is used locally and pinned in CI. FastAPI and Uvicorn power the shell. AnyIO is temporarily constrained below 4.15 because current Starlette references the deprecated BlockingPortal alias; warnings remain errors. GPU/model dependencies are deferred.
 
 ```sh
 uv sync --locked --dev
+npm ci --prefix frontend
 uv run --locked python scripts/check_quality.py
 ```
 
@@ -22,7 +23,7 @@ uv run --locked ruff check .
 uv run --locked ty check
 ```
 
-Once `src/` contains Python application code or `tests/` exists, it also runs `uv run --locked pytest`. At that point missing/empty test collection is a failure. Until then, it prints that application tests are absent; it does not claim an empty suite passed. Follow the planned `src/` layout, and update this gate explicitly if that layout changes.
+It then runs `uv run --locked pytest` unconditionally: zero collected tests fail. Finally `npm run check --prefix frontend` runs strict TypeScript compilation, ESLint, Prettier verification, Vitest UI integration tests, and a Vite production build. Vitest also fails empty collection. Both Windows and Linux jobs install the checked-in npm lock with Node.js 24 before running this same script.
 
 `--locked` rejects a stale lock instead of silently updating it; the quality command does not reformat or fix source code. Use `uv run --locked ruff format .` to apply formatting intentionally. Update dependencies deliberately with uv and review the resulting lockfile. [uv lock and sync behavior](https://docs.astral.sh/uv/concepts/projects/sync/)
 
@@ -44,16 +45,14 @@ Write tests at module interfaces for domain behavior and durable integration sce
 
 The priority scenarios are scoring transitions and checkpoint conflicts, independent unknown attributes, exact numerator/denominator membership, source identity and timestamp mapping, human edits racing a worker result, structural reconciliation, job retry/resumption, and backup restoration. Ordinary CPU tests run in both CI environments. The actual Windows processing machine runs the model/resource/review-time benchmarks; a passing CPU check is not GPU validation.
 
-When the frontend is scaffolded, add its lockfile, strict TypeScript compilation, lint/format checks, production build, and focused UI integration tests to the same quality workflow. Those frontend gates are requirements in the design, not implemented checks today.
+Frontend gates are part of the shared workflow. API conflict tests and UI mocked-network tests verify save behavior and retention of unsaved proposals; production serving and the real loopback launcher are checked separately.
 
-## Bootstrap verification
+## Application foundation verification
 
-Verified locally on macOS with Python 3.12.12 and the locked tool versions:
+Backend integration tests cover validated edits, stale revisions, persistence after reopening, rejected host/origin/session credentials, API misses, migrations, foreign keys, backup-before-migration, concurrent editors, and committed reads during writes. The initial schema has workspace, processing-run, fact, and append-only-intended human-decision records; full domain editing and reconciliation APIs remain later slices.
 
-- Lock freshness, Ruff formatting, Ruff lint, and ty checks all passed.
-- Temporary negative probes were rejected for missing annotations (`ANN001`/`ANN201`), explicit `Any` (`ANN401`), incompatible returns, unresolved imports, and unsound assignment.
-- No application tests exist. Hosted CI and Windows/GPU validation have not run in this session.
+The local validation uses Python 3.12 and Node.js 24. Hosted CI and Windows/GPU validation have not run in this session. Frontend tests use a DOM environment and mocked requests; they do not prove visual layout or video playback. The shell exposes only a workspace-name edit, and does not claim implemented footage import, inference, or statistics.
 
-The illustrative UI preview receives static markup/script validation only. Browser inspection of the local preview was blocked by the browser URL policy, so no interactive or responsive visual QA is claimed.
+Dependency updates must preserve warnings-as-errors and both empty-suite failures. The CI action revisions are pinned, and the Python tooling baseline remains intact.
 
-The CI action references and setup follow the [official uv GitHub Actions guide](https://docs.astral.sh/uv/guides/integration/github/); action revisions are pinned in the workflow.
+Real-browser smoke verification on 2026-09-06 used the built UI served by the loopback launcher: saving a name, competing edits in two tabs, preserving the stale proposal, retrying against the current revision, and reloading the saved state all passed. The full quality command passed 18 backend tests and 5 frontend tests, typing, lint, formatting, lock validation, and the production build.

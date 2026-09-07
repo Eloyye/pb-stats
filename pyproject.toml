@@ -3,10 +3,15 @@ name = "pb-stats"
 version = "0.1.0"
 description = "Local, evidence-linked analysis of professional doubles pickleball footage."
 requires-python = ">=3.12,<3.13"
-dependencies = []
+dependencies = [
+    "anyio<4.15",
+    "fastapi>=0.141.1",
+    "uvicorn>=0.52.4",
+]
 
 [dependency-groups]
 dev = [
+    "httpx2>=2.12.0",
     "pytest>=8,<10",
     "ruff>=0.15,<1",
     "ty>=0.0.73,<0.1",
@@ -32,6 +37,7 @@ suppress-none-returning = false
 
 [tool.ty.environment]
 python-version = "3.12"
+extra-paths = ["src"]
 
 [tool.ty.rules]
 blanket-ignore-comment = "error"
@@ -53,5 +59,9 @@ error-on-warning = true
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
+pythonpath = ["src"]
 addopts = "--strict-config --strict-markers"
 filterwarnings = ["error"]
+
+[tool.ty.src]
+include = ["src", "scripts", "tests"]
